@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { gql } from 'apollo-boost';
 import { useQuery } from '@apollo/react-hooks';
 import styled from 'styled-components';
@@ -7,11 +7,13 @@ import styled from 'styled-components';
 const GET_MOVIE = gql`
   query getMovie($id: Int!) {
     movie(id: $id) {
+      id
       title
       medium_cover_image
       language
       rating
       description_intro
+      isLiked @client
     }
     suggestions(id: $id) {
       id
@@ -60,13 +62,21 @@ const Poster = styled.div`
 
 export default () => {
   const { id } = useParams();
+  let location = useLocation();
+  console.log(location);
   const { loading, data, error } = useQuery(GET_MOVIE, { variables: { id } });
   console.log({ error });
   console.log({ loading, data });
   return (
     <Container>
       <Column>
-        <Title>{loading ? 'loading...' : data.movie.title}</Title>
+        <Title>
+          {loading
+            ? 'loading...'
+            : `${data.movie.title} ${
+                location?.state?.isLiked ? 'Like' : 'Unlike'
+              }`}
+        </Title>
         <Subtitle>
           {data?.movie?.language} {data?.movie?.rating}
           <Description>{data?.movie?.description_intro}</Description>
